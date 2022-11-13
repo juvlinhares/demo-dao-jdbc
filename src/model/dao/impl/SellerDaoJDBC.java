@@ -89,8 +89,43 @@ public class SellerDaoJDBC<K, V> implements SellerDao {
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName "
+							+ "FROM seller INNER JOIN department "
+							+ "ON seller.DepartmentId = department.Id " 
+							+ "ORDER BY Name");
+			rs = st.executeQuery();
+
+			List<Seller> list = new ArrayList<Seller>();
+
+			// criar um map vazio:
+			Map<Integer, Department> map = new HashMap<>();
+
+			while (rs.next()) {
+				// testar se o dep ja existe, indo no map e buscando um dep que tenha o id
+				// stringado, se nao existe o map.get retorna null
+				Department dep = map.get(rs.getInt("DepartmentId"));
+
+				if (dep == null) {
+					// caso o dep acima seja nulo: instancio o dep e guardo no map
+					dep = instanteDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+				Seller obj = instanteSeller(rs, dep);
+				list.add(obj);
+			}
+			return list;
+
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeResultSet(rs);
+			DB.closeStatement(st);
+		}
+		
 	}
 
 	@Override
@@ -99,8 +134,11 @@ public class SellerDaoJDBC<K, V> implements SellerDao {
 		ResultSet rs = null;
 		try {
 			st = conn.prepareStatement(
-					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
-							+ "ON seller.DepartmentId = department.Id " + "WHERE DepartmentId = ? " + "ORDER BY Name");
+					"SELECT seller.*,department.Name as DepName "
+							+ "FROM seller INNER JOIN department "
+							+ "ON seller.DepartmentId = department.Id " 
+							+ "WHERE DepartmentId = ? "
+							+ "ORDER BY Name");
 
 			st.setInt(1, department.getId());
 			rs = st.executeQuery();
@@ -117,13 +155,11 @@ public class SellerDaoJDBC<K, V> implements SellerDao {
 
 				if (dep == null) {
 					// caso o dep acima seja nulo: instancio o dep e guardo no map
-					 dep = instanteDepartment(rs);
+					dep = instanteDepartment(rs);
 					map.put(rs.getInt("DepartmentId"), dep);
-					
 				}
 				Seller obj = instanteSeller(rs, dep);
 				list.add(obj);
-				
 			}
 			return list;
 
