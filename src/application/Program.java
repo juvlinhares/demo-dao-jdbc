@@ -1,5 +1,6 @@
 package application;
 
+import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +33,14 @@ public class Program {
 		for (Seller obj : list) {
 			System.out.println(obj);
 		}
+		
+		System.out.println("\n==== TEST 4  : seller insert =====");
+		//intanciar um novo vendedor só pra testar
+		Seller newSeller = new Seller(null, "Greg", "greg@gmail.com", new Date(), 4000.0, department);
+		//inserir esse vendedor(método insert)
+		sellerDao.insert(newSeller);
+		//pegar o id desse newSeller:
+		System.out.println("Inserted! New id = " + newSeller.getId());
 		
 	}
 
